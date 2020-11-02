@@ -6,6 +6,7 @@ from bullet import Bullet
 from alien import Alien
 from time import sleep
 from game_stats import GameStats
+from button import Button
 
 class AlienInvasion:
     """Klasa służaca do zarzadzania zasobami i sposobem działania gry  """
@@ -30,6 +31,9 @@ class AlienInvasion:
         self.aliens = pygame.sprite.Group()
 
         self._create_fleet()
+
+        #utworzenie przycisku
+        self.play_button = Button(self, msg="Graj")
 
     def run_game(self):
         """Rozpoczecie petli głownej gry."""
@@ -62,6 +66,7 @@ class AlienInvasion:
 
         else:
             self.stats.game_active = False
+            pygame.mouse.set_visible(True)
 
     def _create_fleet(self):
         """Utworzenie pelnej floty obcych"""
@@ -131,9 +136,11 @@ class AlienInvasion:
             elif event.type == pygame.KEYDOWN:  # sprawdzamy nacisniecie klawisz
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:  # jesli klawisz podniesiony t
-
                 # o nie przesuwamy
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
 
     def _check_keydown_events(self, event):
         """Reakacja na nacisniecie klawisza"""
@@ -162,6 +169,26 @@ class AlienInvasion:
         elif event.key == pygame.K_DOWN:
             self.ship.moving_down = False
 
+    def _check_play_button(self, mouse_pos):
+        """rozpoczecie nowej gry po wcisnieciu przycisku"""
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.stats.game_active:
+            self.stats.reset_stats()
+            self.stats.game_active = True
+
+            #usuniecie listy aliens i bullets
+            self.aliens.empty()
+            self.bullets.empty()
+
+            #utworzenie nowej floty i wysrodkowanie statku
+            self._create_fleet()
+            self.ship.center_ship()
+
+            #ukrycie kursora myszy
+            pygame.mouse.set_visible(False)
+
+
+
     def _fire_bullet(self):
         """Utworzenie nowego pocisku i dodanie go do grupy pociskow"""
         if len(self.bullets) < self.settings.bullet_alowed:
@@ -177,6 +204,10 @@ class AlienInvasion:
             bullet.draw_bullet()
 
         self.aliens.draw(self.screen)
+
+        #wyswietlenie przycisku tylko gdy gra nie aktywna
+        if not  self.stats.game_active:
+            self.play_button.draw_button()
         # wyswietlenie ostatnio zmodyfikowanego ekranu, odswiezanie ekranu
         pygame.display.flip()
 
