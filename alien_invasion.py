@@ -7,6 +7,7 @@ from alien import Alien
 from time import sleep
 from game_stats import GameStats
 from button import Button
+from score_board import Scoreboard
 
 class AlienInvasion:
     """Klasa służaca do zarzadzania zasobami i sposobem działania gry  """
@@ -23,8 +24,10 @@ class AlienInvasion:
 
         pygame.display.set_caption("Inwazja obcych")
 
+        #utworzenie egzemplarza do przechowywania danych
         #dane statystyczne w grze
         self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
 
         self.ship = Ship(self)  # utworzenie egemplrza klasy SHIP, wymaga przekazania obiektu klasy alieninvasion
         self.bullets = pygame.sprite.Group()
@@ -46,6 +49,7 @@ class AlienInvasion:
                 self._update_aliens()
 
             self._update_screen()
+
 
 
     def _ship_hit(self):
@@ -125,6 +129,7 @@ class AlienInvasion:
             # pozbycie sie pociskow i utworzenie nowej floty
             self.bullets.empty()
             self._create_fleet()
+            self.settings.increase_speed()
 
     def _check_events(self):
         """_metoda pomocnicza nie do wywołania dla egemplarza klasy"""
@@ -173,6 +178,8 @@ class AlienInvasion:
         """rozpoczecie nowej gry po wcisnieciu przycisku"""
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
+            #wyzerowanie ustawien gry
+            self.settings.initialize_dynamic_settings()
             self.stats.reset_stats()
             self.stats.game_active = True
 
@@ -204,6 +211,9 @@ class AlienInvasion:
             bullet.draw_bullet()
 
         self.aliens.draw(self.screen)
+
+        #wyswietlenie inf o punktach
+        self.sb.show_score()
 
         #wyswietlenie przycisku tylko gdy gra nie aktywna
         if not  self.stats.game_active:
