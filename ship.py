@@ -1,11 +1,12 @@
 import pygame
+from pygame.sprite import Sprite
 
-class Ship:
+class Ship(Sprite):
     '''Klasa przeznaczona do zarzadzania statkiem kosmicznym'''
 
     def __init__(self, ai_game): #ai_game odwolanie do elementu klasy alien_inaasion
         '''Inicjalizacja statku kosmicznego i jego polozenia poczatkowego'''
-
+        super().__init__()
         self.screen = ai_game.screen
         self.settings = ai_game.settings
         self.screen_rect = ai_game.screen.get_rect() #rect pozwala traktowac element jako prostokat
@@ -13,7 +14,7 @@ class Ship:
 
         #wczytywanie obrazu statku kosmicznego i pobrannie jego prostokata
         self.image = pygame.image.load('images/ship.bmp')
-        self.image= pygame.transform.scale(self.image, (50,50))
+        self.image= pygame.transform.scale(self.image, (40,40))
         self.rect = self.image.get_rect() #pobiera polozenie statku
 
         #kazdy nowy statek kosmiczny pojawia sie na srodkowymdole ekranu

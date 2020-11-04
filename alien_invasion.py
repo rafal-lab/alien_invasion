@@ -57,6 +57,7 @@ class AlienInvasion:
         if self.stats.ships_left > 0:
             #zmniejszenie wartosci ships_left
             self.stats.ships_left -=1
+            self.sb.prep_ships()
 
             #usuniecie obcych i pociskow
             self.aliens.empty()
@@ -69,6 +70,8 @@ class AlienInvasion:
             sleep(0.5)
 
         else:
+            self.stats.ships_left -= 1
+            self.sb.prep_ships()
             self.stats.game_active = False
             pygame.mouse.set_visible(True)
 
@@ -125,11 +128,22 @@ class AlienInvasion:
         # sprawdzanie czy pocisk trafil obcego, jesli tak osuwamy i pocisk i obcego
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
 
+        if collisions:
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
+            self.sb.prep_score()
+            self.sb.check_high_score()
+            print(self.sb.stats.score)
+
         if not self.aliens:
             # pozbycie sie pociskow i utworzenie nowej floty
             self.bullets.empty()
             self._create_fleet()
             self.settings.increase_speed()
+
+            #inkrementacja numeru poziomu
+            self.stats.level += 1
+            self.sb.prep_level()
 
     def _check_events(self):
         """_metoda pomocnicza nie do wywołania dla egemplarza klasy"""
@@ -138,14 +152,15 @@ class AlienInvasion:
         for event in pygame.event.get():  # petla zdarzen
             if event.type == pygame.QUIT:
                 sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
             elif event.type == pygame.KEYDOWN:  # sprawdzamy nacisniecie klawisz
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:  # jesli klawisz podniesiony t
                 # o nie przesuwamy
                 self._check_keyup_events(event)
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                self._check_play_button(mouse_pos)
+
 
     def _check_keydown_events(self, event):
         """Reakacja na nacisniecie klawisza"""
@@ -182,6 +197,9 @@ class AlienInvasion:
             self.settings.initialize_dynamic_settings()
             self.stats.reset_stats()
             self.stats.game_active = True
+            self.sb.prep_score()
+            self.sb.prep_level()
+            self.sb.prep_ships()
 
             #usuniecie listy aliens i bullets
             self.aliens.empty()
